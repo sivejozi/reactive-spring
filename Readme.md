@@ -1,68 +1,146 @@
-APIs
+# Spring WebFlux Reactive API Example
+
+This project is a **simple Spring Boot WebFlux application** demonstrating **reactive programming** using **Project Reactor**. It exposes REST APIs to create and fetch users, using **non-blocking, asynchronous, functional code**.
+
+---
+
+## 📦 Features
+
+* Non-blocking I/O
+* Efficient thread usage under high load
+* Asynchronous request handling
+* Clean, functional code using Reactor
+
+---
+
+## 🛠️ Prerequisites
+
+* Java 17+ (JDK)
+* Maven
+* (Optional) Postman or `curl` for testing APIs
+
+---
+
+## 🚀 Running the Application
+
+1. Clone the repository:
+
+```bash
+git clone <your-repo-url>
+cd reactive-spring
+```
+
+2. Build and run:
+
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+
+The application will start on **`http://localhost:8080`**.
+
+---
+
+## 📜 REST APIs
+
+### 1️⃣ Create Users
+
+```bash
 curl -X POST http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
--d '{
-"id": "1",
-"name": "Alice",
-"age": 25
-}'
+-d '{ "id": "1", "name": "Alice", "age": 25 }'
 
 curl -X POST http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
--d '{
-"id": "2",
-"name": "Bob",
-"age": 17
-}'
+-d '{ "id": "2", "name": "Bob", "age": 17 }'
 
 curl -X POST http://localhost:8080/api/users \
 -H "Content-Type: application/json" \
--d '{
-"id": "3",
-"name": "Charlie",
-"age": 30
-}'
+-d '{ "id": "3", "name": "Charlie", "age": 30 }'
+```
 
+### 2️⃣ Get User by ID
 
+```bash
 curl http://localhost:8080/api/users/1
-
 curl http://localhost:8080/api/users/2
+```
 
+### 3️⃣ Get All Users
+
+```bash
+curl http://localhost:8080/api/users
+```
+
+### 4️⃣ Get Adults Only (age > 17)
+
+```bash
 curl http://localhost:8080/api/users/adults
+```
 
+---
 
-✅ What You Get 
-1. Non-blocking I/O 
-2. Efficient thread usage under high load
-3. Asynchronous request handling 
-4. Clean, functional code using Reactor
+## 🧠 How It Works
 
-1️⃣ Non-blocking I/O
-Traditional Spring MVC uses blocking I/O.
-    Each HTTP request consumes a thread until it completes.
-    If a thread waits for a database or external API, it’s idle but still occupied.
+### 1️⃣ Non-blocking I/O
 
-Reactive (WebFlux + Reactor) uses non-blocking I/O:
-    Threads don’t wait; they are freed to handle other requests while waiting for I/O.
-    Example: If fetching a user from a DB, the thread continues doing other work instead of blocking.
+Traditional Spring MVC uses **blocking I/O**, where each HTTP request occupies a thread until completion. Reactive WebFlux with Reactor is **non-blocking**:
 
-Benefit: You can handle thousands of concurrent requests with a small thread pool.
+* Threads are freed while waiting for I/O (e.g., database calls).
+* The server can handle thousands of concurrent requests with a small number of threads.
 
-2️⃣ Efficient Thread Usage Under High Load
-Because threads aren’t blocked during I/O, you need far fewer threads to handle high load.
-Example:
-    Blocking Spring MVC: 1000 requests → 1000 threads (heavy memory usage).
-    WebFlux Reactor: 1000 requests → 20–50 threads (low memory, efficient CPU usage).
+**Benefit:** High scalability with low memory usage.
 
-Benefit: Scalability and lower server resource usage.
+---
 
-3️⃣ Asynchronous Request Handling
-With Reactor, you return Mono or Flux from your endpoints.
-    The request doesn’t block the server thread, but still produces a response as soon as the data is ready.
-    While waiting for the DB, other requests can be served.
-    Once the DB responds, Reactor resumes the processing and sends the response.
+### 2️⃣ Efficient Thread Usage Under High Load
 
-4️⃣ Clean, Functional Code Using Reactor
-Reactor encourages a functional, declarative style:
-    Transform streams with map(), filter(), flatMap(), zip(), etc.
-    Avoid explicit loops or blocking code.
+* Blocking MVC: 1000 requests → 1000 threads
+* WebFlux Reactor: 1000 requests → 20–50 threads
+
+**Benefit:** Efficient CPU usage and lower server resource consumption.
+
+---
+
+### 3️⃣ Asynchronous Request Handling
+
+Endpoints return **`Mono`** or **`Flux`**, representing asynchronous data streams:
+
+```java
+@GetMapping("/users/{id}")
+public Mono<User> getUser(@PathVariable String id) {
+    return repository.findById(id);
+}
+```
+
+* Request threads are **not blocked**.
+* When data is ready, Reactor automatically resumes processing and returns the response.
+
+---
+
+### 4️⃣ Clean, Functional Code Using Reactor
+
+Reactor encourages **functional and declarative programming**:
+
+```java
+Flux<User> adults = repository.findAll()
+                              .filter(user -> user.getAge() > 17)
+                              .map(user -> {
+                                  user.setName(user.getName().toUpperCase());
+                                  return user;
+                              });
+```
+
+* Use operators like `map()`, `filter()`, `flatMap()`, `zip()`
+* Avoid explicit loops or manual thread management
+
+---
+
+## 📖 Summary
+
+This project demonstrates the **core benefits of Spring WebFlux + Project Reactor**:
+
+* Scalable, non-blocking I/O
+* Efficient thread usage under high load
+* Asynchronous, reactive endpoints
+* Clean, functional, maintainable code
